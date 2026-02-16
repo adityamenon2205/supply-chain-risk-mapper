@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .vscode/
 dependency_risk_report.csv
+pypi_cache.json
