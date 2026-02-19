@@ -37,6 +37,7 @@ def main():
             "package": package_name,
             "version": version,
             "inactivity_years": analysis["inactivity_years"],
+            "release_anomaly": analysis["release_anomaly"],  # 🔥 Added
             "risk_score": risk["score"],
             "risk_category": risk["category"],
             "reasons": risk["reasons"]
