@@ -2,7 +2,6 @@ import subprocess
 import json
 from pathlib import Path
 
-
 class DependencyExtractor:
 
     def __init__(self, project_path: str):

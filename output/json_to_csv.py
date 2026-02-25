@@ -12,20 +12,31 @@ def generate_risk_csv(results, output_file="dependency_risk_report.csv"):
             "Installed Version",
             "Inactivity (Years)",
             "Release Anomaly",
-            "Risk Score",
+            "Base Risk Score",
+            "Propagated Risk Score",
+            "Final Risk Score",
             "Risk Category",
             "Reasons"
         ])
 
         for result in results:
+
+            # Show textual reasons only for MEDIUM and HIGH risks
+            if result["risk_category"] in ["MEDIUM", "HIGH"]:
+                reasons_text = "; ".join(result.get("reasons", []))
+            else:
+                reasons_text = ""
+
             writer.writerow([
                 result["package"],
                 result["version"],
                 result["inactivity_years"],
                 result["release_anomaly"],
-                result["risk_score"],
+                result["base_score"],
+                result["propagated_score"],
+                result["final_score"],
                 result["risk_category"],
-                "; ".join(result["reasons"])
+                reasons_text
             ])
 
     print(f"\nRisk CSV generated: {output_file}")
