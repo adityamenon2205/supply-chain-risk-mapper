@@ -14,7 +14,7 @@ class PyPICollector:
             with open(self.CACHE_FILE, "r") as f:
                 raw_cache = json.load(f)
 
-            #Convert ISO strings back to datetime
+            # Convert ISO strings back to datetime
             self.cache = {}
             for pkg, data in raw_cache.items():
                 data["release_dates"] = [
@@ -31,14 +31,14 @@ class PyPICollector:
         for pkg, data in self.cache.items():
             serializable_cache[pkg] = {
                 **data,
-                # 🔥 Convert datetime → ISO string
+                # Convert datetime → ISO string
                 "release_dates": [
                     d.isoformat() for d in data["release_dates"]
                 ]
             }
 
         with open(self.CACHE_FILE, "w") as f:
-            json.dump(serializable_cache, f)
+            json.dump(serializable_cache, f, indent=2)
 
     def fetch_metadata(self, package_name: str):
 
@@ -58,7 +58,7 @@ class PyPICollector:
 
             release_dates = []
 
-            for releases in data["releases"].values():
+            for releases in data.get("releases", {}).values():
                 for release in releases:
                     upload_time = release.get("upload_time_iso_8601")
                     if upload_time:
@@ -68,12 +68,18 @@ class PyPICollector:
                             )
                         )
 
+            info = data.get("info", {})
+
             metadata = {
-                "name": data["info"]["name"],
-                "version": data["info"]["version"],
-                "author": data["info"].get("author"),
-                "maintainer": data["info"].get("maintainer"),
-                "release_dates": release_dates
+                "name": info.get("name"),
+                "version": info.get("version"),
+                "author": info.get("author"),
+                "maintainer": info.get("maintainer"),
+                "release_dates": release_dates,
+
+                # 🔥 NEW FIELDS FOR GITHUB INTEGRATION
+                "project_urls": info.get("project_urls", {}),
+                "home_page": info.get("home_page"),
             }
 
             # Store in cache
