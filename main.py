@@ -3,6 +3,7 @@ from collectors.pypi_collector import PyPICollector
 from collectors.github_collector import GitHubCollector
 from analyzer.maintainer_analysis import MaintainerAnalyzer
 from analyzer.github_analysis import GitHubAnalyzer
+from analyzer.typosquat_analysis import TyposquatAnalyzer
 from scoring.risk_engine import RiskEngine
 from output.json_to_csv import generate_risk_csv
 
@@ -15,6 +16,7 @@ def main():
     github_collector = GitHubCollector()
     analyzer = MaintainerAnalyzer()
     github_analyzer = GitHubAnalyzer()
+    typosquat_analyzer = TyposquatAnalyzer()
     risk_engine = RiskEngine()
 
     results = []
@@ -28,7 +30,7 @@ def main():
         risk_engine.add_package(package_name, dependency_names)
 
     # -------------------------------------------------
-    # STEP 2: Compute base risks (including GitHub signals)
+    # STEP 2: Compute base risks (Maintainer + GitHub + Typosquat)
     # -------------------------------------------------
     package_analysis_cache = {}
 
@@ -48,7 +50,6 @@ def main():
         # GitHub Integration
         # -------------------------------
         github_url = None
-
         project_urls = metadata.get("project_urls", {})
 
         if isinstance(project_urls, dict):
@@ -68,10 +69,17 @@ def main():
         github_analysis = github_analyzer.analyze(github_data)
 
         # -------------------------------
-        # Combine Maintainer + GitHub score
+        # Typosquatting Detection
+        # -------------------------------
+        typo_analysis = typosquat_analyzer.analyze(package_name)
+
+        # -------------------------------
+        # Combine Scores
         # -------------------------------
         combined_maintainer_score = (
-            analysis["maintainer_score"] + github_analysis["github_score"]
+            analysis["maintainer_score"]
+            + github_analysis["github_score"]
+            + typo_analysis["typosquat_score"]
         )
 
         base_data = risk_engine.calculate_base_risk(
@@ -83,7 +91,9 @@ def main():
 
         # Merge textual reasons
         combined_reasons = (
-            base_data["reasons"] + github_analysis["github_reasons"]
+            base_data["reasons"]
+            + github_analysis["github_reasons"]
+            + typo_analysis["typosquat_reasons"]
         )
 
         package_analysis_cache[package_name] = {
