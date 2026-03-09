@@ -40,7 +40,7 @@ The system follows a modular design:
 
 ## 🔑 Setup
 
-1. Create a virtual environment:
+### 1️⃣ Create a virtual environment:
    ```bash
    python3 -m venv venv
    source venv/bin/activate
